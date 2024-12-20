@@ -23,7 +23,7 @@
 // 			content
 //
 // 	* indent at certain character amount
-// 	** title then body in "brackets" 
+// 	** title then body in "brackets"
 //
 // 	Since brackets didnt work I gues flags
 
@@ -62,25 +62,6 @@ void viewNotes()
 	file.close();
 }
 
-void appendNote(const std::string &line)
-{
-	std::ofstream file;
-	file.open(filepath, std::ios::app);
-
-	if (! file.good())
-	{
-		std::cout << "Somethings wrong!";
-		exit(1);
-	}
-
-	std::string date = getDate();
-	// remove ending new line
-	date.erase(date.size() - 1);
-
-	file << date << " -> " << line << '\n';
-	file.close();
-}
-
 // automatic move operator I think
 std::vector<std::string> parseBody(const std::string &text)
 {
@@ -98,10 +79,16 @@ std::vector<std::string> parseBody(const std::string &text)
 		if (context.size() + word.size() > 60)
 		{
 			body.push_back(context);
+            context.clear();
 		}
 
-		context += word;
+		context += word + " ";
 	}
+
+    if(! context.empty())
+    {
+        body.push_back(context);
+    }
 
 	return body;
 }
@@ -118,8 +105,9 @@ void addEntry(const std::string &title, const std::string &body)
 	}
 
 	std::string date = getDate();
-	date.erase(date.size() - 1);
 
+    // remove new line
+	date.erase(date.size() - 1);
 
 	// date -> title
 	//
@@ -127,7 +115,7 @@ void addEntry(const std::string &title, const std::string &body)
 	// 		body
 	// 		body
 
-	file << date << " -> " << title << '\n' << '\n';
+	file << date << " -> " << '[' + title << ']' << '\n' << '\n';
 
 	std::vector<std::string> content = parseBody(body);
 
@@ -135,6 +123,8 @@ void addEntry(const std::string &title, const std::string &body)
 	{
 		file << '\t' << line << '\n';
 	}
+
+    file << '\n';
 }
 
 void parseEntry(int n, char **args)
@@ -142,26 +132,23 @@ void parseEntry(int n, char **args)
 	std::string title 	= "";
 	std::string body 	= "";
 
-	int index = 1;
-	for (; index < n; ++index)
+	int index = 2;
+	for (; index < n && strcmp(args[index], "-b"); ++index)
 	{
-		std::cout << '\t' << "First char: " << args[index][0] << '\n';
-		if (args[index][0] == '"')
-			break;
-
-		title += std::string(args[index]) + " ";
+		title += std::string(args[index])+ " ";
 	}
+    title.erase(title.size() - 1);
 
 	if (index == n)
 	{
 		std::cout << "No body!\n";
-		std::cout << "Title so far -> " << title << '\n';
 		exit(1);
 	}
 
+    ++index;
 	for (; index < n; ++index)
 	{
-		body += (args[index]+1, strlen(args[index]) - 2) + " ";
+        body += std::string(args[index]) + " ";
 	}
 
 	addEntry(title, body);
@@ -175,10 +162,10 @@ int main(int argc, char **argv)
 		return 1;
 	} else
 	{
-		if (! strcmp(argv[1],"-v"))
+		if (strcmp(argv[1],"-v") == 0)
 		{
 			viewNotes();
-		} else {
+		} else if (strcmp(argv[1], "-t") == 0){
 			parseEntry(argc, argv);
 		}
 	}
