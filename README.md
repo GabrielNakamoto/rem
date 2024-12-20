@@ -1,6 +1,9 @@
 # Rem
 
-Simple CLI note taking app. Written for fun and to keep track of my chaotic mind.
+Simple CLI note taking app.
+Written for fun and to keep track of my chaotic mind.
+
+I know the code is bad, I will clean it up eventually...
 
 ## Usage
 
